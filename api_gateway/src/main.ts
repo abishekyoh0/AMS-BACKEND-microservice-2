@@ -8,7 +8,6 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({ origin: process.env.CORS_ORIGIN || '*' });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
   // ── Swagger ──────────────────────────────────────────────────────────────
   const config = new DocumentBuilder()
     .setTitle('Apartment Management System — API')
