@@ -1,0 +1,21 @@
+{
+  "name": "ams-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm run install:gateway && npm run install:auth",
+    "install:gateway": "cd api_gateway && npm install",
+    "install:auth": "cd service/authentication_services && npm install",
+    "start:gateway": "cd api_gateway && npm run start:dev",
+    "start:auth": "cd service/authentication_services && npm run start:dev",
+    "start:apartment": "cd service/apartment_services && npm run start:dev",
+    "start:notification": "cd service/notification_services && npm run start:dev",
+    "start:payment": "cd service/payment_services && npm run start:dev",
+    "start:reports": "cd service/reports_services && npm run start:dev",
+    "start:all": "concurrently -n GATEWAY,AUTH,APARTMENT,NOTIFY,PAYMENT,REPORTS -c yellow,green,blue,red,white,gray \"npm run start:gateway\" \"npm run start:auth\" \"npm run start:apartment\" \"npm run start:notification\" \"npm run start:payment\" \"npm run start:reports\"",
+    "seed": "cd service/authentication_services && npm run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
