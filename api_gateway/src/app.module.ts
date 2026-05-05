@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { APP_GUARD } from '@nestjs/core';
-
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AuthGatewayController } from './auth/auth.gateway.controller';
 import { UsersGatewayController } from './users/users.gateway.controller';
 import { GatesGatewayController } from './gates/gates.gateway.controller';
+import { ComplaintsGatewayController } from './complaints/complaints.gateway.controller';
 
 @Module({
   imports: [
@@ -59,6 +59,7 @@ import { GatesGatewayController } from './gates/gates.gateway.controller';
     AuthGatewayController,
     UsersGatewayController,
     GatesGatewayController,
+    ComplaintsGatewayController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
