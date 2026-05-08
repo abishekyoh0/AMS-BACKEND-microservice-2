@@ -115,11 +115,11 @@ export class ComplaintsService {
       complaint_id: new Types.ObjectId(complaintId),
       worker_id: new Types.ObjectId(dto.worker_id),
       worker_name: dto.worker_name,
-      worker_expertise: dto.worker_expertise || null,
+      worker_expertise: dto.worker_expertise || undefined,
       assigned_by_id: new Types.ObjectId(adminId),
       assigned_by_name: adminName,
       assigned_date: new Date(),
-      scheduled_visit_date: dto.scheduled_visit_date ? new Date(dto.scheduled_visit_date) : null,
+      scheduled_visit_date: dto.scheduled_visit_date ? new Date(dto.scheduled_visit_date) : undefined,
       status: AssignmentStatus.ASSIGNED,
     });
 

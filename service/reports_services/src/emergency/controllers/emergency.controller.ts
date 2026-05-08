@@ -1,18 +1,26 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import {
+  Controller, Get, Post, Body, Param, Patch, Delete, Query,
+} from '@nestjs/common';
 
-import { EmergencyService } from '../services/emergency.service';
 import { CreateEmergencyDto } from '../dto/create-emergency.dto';
 import { UpdateEmergencyDto } from '../dto/update-emergency.dto';
+import { ReportStatusEnum } from '../../schemas/report-status.schema';
+import { EmergencyService } from '../services/emergency.service';
 
 @Controller('emergency')
 export class EmergencyController {
   constructor(private readonly emergencyService: EmergencyService) {}
+
 
   @Post()
   create(@Body() dto: CreateEmergencyDto) {
     return this.emergencyService.create(dto);
   }
 
+  @Get()
+  findAll() {
+    return this.emergencyService.findAll();
+  }
 
   @Get('active')
   getActive() {
@@ -27,22 +35,6 @@ export class EmergencyController {
   @Get('stats/dashboard')
   getStats() {
     return this.emergencyService.getStats();
-  }
-
-  @Get('report/all')
-  generateAllReport() {
-    return this.emergencyService.requestExcelReport('ALL');
-  }
-
-  @Get('report/:id')
-  generateSingleReport(@Param('id') id: string) {
-    return this.emergencyService.requestExcelReport('SINGLE', id);
-  }
-
-
-  @Get()
-  findAll() {
-    return this.emergencyService.findAll();
   }
 
   @Get(':id')
@@ -60,7 +52,7 @@ export class EmergencyController {
     return this.emergencyService.resolveEmergency(id);
   }
 
-  @Patch('acknowledge/:id') 
+  @Patch('acknowledge/:id')
   acknowledge(@Param('id') id: string) {
     return this.emergencyService.acknowledge(id);
   }
@@ -68,5 +60,41 @@ export class EmergencyController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.emergencyService.remove(id);
+  }
+
+  @Post('report/all')
+  generateAllReport(@Query('requestedBy') requestedBy?: string) {
+    return this.emergencyService.requestExcelReport('ALL', undefined, requestedBy);
+  }
+
+  @Post('report/:id')
+  generateSingleReport(
+    @Param('id') id: string,
+    @Query('requestedBy') requestedBy?: string,
+  ) {
+    return this.emergencyService.requestExcelReport('SINGLE', id, requestedBy);
+  }
+
+  @Get('report/status/:reportId')
+  getReportStatus(@Param('reportId') reportId: string) {
+    return this.emergencyService.getReportStatus(reportId);
+  }
+
+  @Get('report/history')
+  getReportHistory(@Query('requestedBy') requestedBy?: string) {
+    return this.emergencyService.getReportHistory(requestedBy);
+  }
+
+  @Patch('report/status/:reportId')
+  updateReportStatus(
+    @Param('reportId') reportId: string,
+    @Body() body: { status: ReportStatusEnum; downloadUrl?: string; errorMessage?: string },
+  ) {
+    return this.emergencyService.updateReportStatus(
+      reportId,
+      body.status,
+      body.downloadUrl,
+      body.errorMessage,
+    );
   }
 }
