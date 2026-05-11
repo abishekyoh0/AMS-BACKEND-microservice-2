@@ -7,6 +7,8 @@ import { AuthGatewayController } from './auth/auth.gateway.controller';
 import { UsersGatewayController } from './users/users.gateway.controller';
 import { GatesGatewayController } from './gates/gates.gateway.controller';
 import { ComplaintsGatewayController } from './complaints/complaints.gateway.controller';
+import { PaymentsGatewayController } from './payments/payments.gateway.controller';
+
 
 @Module({
   imports: [
@@ -55,14 +57,18 @@ import { ComplaintsGatewayController } from './complaints/complaints.gateway.con
       },
     ]),
   ],
+
   controllers: [
     AuthGatewayController,
     UsersGatewayController,
     GatesGatewayController,
     ComplaintsGatewayController,
+    PaymentsGatewayController,
   ],
+
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
+
 })
 export class AppModule {}
