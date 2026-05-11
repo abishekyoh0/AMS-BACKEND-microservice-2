@@ -14,6 +14,7 @@ import {
   AssignWorkerDto, UpdateAssignmentStatusDto,
   ExtraChargesDto, CloseComplaintDto, ComplaintFilterDto,
 } from './dto/complaint.dto';
+import { WorkerAssignmentDto } from './dto/worker-assignment.dto';
 
 @Injectable()
 export class ComplaintsService {
@@ -114,11 +115,11 @@ export class ComplaintsService {
       complaint_id: new Types.ObjectId(complaintId),
       worker_id: new Types.ObjectId(dto.worker_id),
       worker_name: dto.worker_name,
-      worker_expertise: dto.worker_expertise || null,
+      worker_expertise: dto.worker_expertise || undefined,
       assigned_by_id: new Types.ObjectId(adminId),
       assigned_by_name: adminName,
       assigned_date: new Date(),
-      scheduled_visit_date: dto.scheduled_visit_date ? new Date(dto.scheduled_visit_date) : null,
+      scheduled_visit_date: dto.scheduled_visit_date ? new Date(dto.scheduled_visit_date) : undefined,
       status: AssignmentStatus.ASSIGNED,
     });
 
@@ -294,7 +295,7 @@ export class ComplaintsService {
   // ─────────────────────────────────────────────────────────────────────────
   // GET — complaints by worker (for worker's task view)
   // ─────────────────────────────────────────────────────────────────────────
-  async getWorkerAssignments(workerId: string) {
+  async getWorkerAssignments(workerId: string): Promise<WorkerAssignmentDto[]> {
     const assignments = await this.assignmentModel
       .find({
         worker_id: new Types.ObjectId(workerId),
@@ -312,10 +313,28 @@ export class ComplaintsService {
 
     const complaintMap = Object.fromEntries(complaints.map(c => [String(c._id), c]));
 
-    return assignments.map(a => ({
-      ...a,
-      complaint: complaintMap[String(a.complaint_id)] || null,
-    }));
+return assignments.map((a): WorkerAssignmentDto => ({
+  _id: String(a._id),
+  complaint_id: String(a.complaint_id),
+  worker_id: String(a.worker_id),
+  worker_name: a.worker_name,
+  status: a.status,
+  assigned_date: a.assigned_date,
+
+  complaint: complaintMap[String(a.complaint_id)]
+    ? {
+        complaint_number: complaintMap[String(a.complaint_id)].complaint_number,
+        title: complaintMap[String(a.complaint_id)].title,
+        category: complaintMap[String(a.complaint_id)].category,
+        priority: complaintMap[String(a.complaint_id)].priority,
+        status: complaintMap[String(a.complaint_id)].status,
+        unit_number: complaintMap[String(a.complaint_id)].unit_number,
+        block: complaintMap[String(a.complaint_id)].block,
+        floor: complaintMap[String(a.complaint_id)].floor,
+        resident_name: complaintMap[String(a.complaint_id)].resident_name,
+      }
+    : null,
+}));
   }
 
   // ─────────────────────────────────────────────────────────────────────────

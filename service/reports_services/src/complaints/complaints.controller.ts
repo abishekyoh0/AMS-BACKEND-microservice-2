@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ComplaintsService } from './complaints.service';
+import { WorkerAssignmentDto } from './dto/worker-assignment.dto';
 
 /**
  * TCP Message Patterns — consumed by the API Gateway
@@ -68,7 +69,7 @@ export class ComplaintsController {
   }
 
   @MessagePattern('complaints.worker_assignments')
-  workerAssignments(@Payload() d: any) {
+  workerAssignments(@Payload() d: any): Promise<WorkerAssignmentDto[]> {
     return this.service.getWorkerAssignments(d.worker_id);
   }
 
