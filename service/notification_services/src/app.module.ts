@@ -12,6 +12,7 @@ import { AccessRequestModule } from './access/modules/access-request.module';
       process.env.MONGODB_URI || 'mongodb://localhost:27017/AMS-microservices',
       { dbName: process.env.MONGODB_DB || 'notification-service' },
     ),
+    
     NotificationModule,
     AccessRequestModule 
   ],
