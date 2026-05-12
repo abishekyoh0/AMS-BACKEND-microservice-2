@@ -18,11 +18,11 @@ import {
 @Injectable()
 export class PaymentsService {
   constructor(
-    @InjectModel(Bill.name)            private billModel: Model<BillDocument>,
-    @InjectModel(Payment.name)         private paymentModel: Model<PaymentDocument>,
-    @InjectModel(PaymentCounter.name)  private counterModel: Model<PaymentCounterDocument>,
+    @InjectModel(Bill.name) private billModel: Model<BillDocument>,
+    @InjectModel(Payment.name) private paymentModel: Model<PaymentDocument>,
+    @InjectModel(PaymentCounter.name) private counterModel: Model<PaymentCounterDocument>,
     @InjectModel(PaymentReminder.name) private reminderModel: Model<PaymentReminderDocument>,
-  ) {}
+  ) { }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Auto-generate payment number: PAY-2025-05-00001
@@ -239,9 +239,9 @@ export class PaymentsService {
       query.bill_id = { $in: billIds };
     }
 
-    const page  = Number(filter.page)  || 1;
+    const page = Number(filter.page) || 1;
     const limit = Number(filter.limit) || 20;
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
       this.paymentModel.find(query).sort({ payment_date: -1 }).skip(skip).limit(limit).lean(),
@@ -342,7 +342,7 @@ export class PaymentsService {
   // ─────────────────────────────────────────────────────────────────────────
   // Resident payment status for a bill
   // ─────────────────────────────────────────────────────────────────────────
-  async getResidentBillStatus(residentId: string, billing_month?: string) {
+  async getResidentBillStatus(residentId: string, billing_month?: string): Promise<any[]> {
     const query: any = { resident_id: new Types.ObjectId(residentId) };
     if (billing_month) query.billing_month = billing_month;
 

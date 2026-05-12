@@ -4,7 +4,7 @@ import { PaymentsService } from './payments.service';
 
 @Controller()
 export class PaymentsController {
-  constructor(private readonly service: PaymentsService) {}
+  constructor(private readonly service: PaymentsService) { }
 
   @MessagePattern('payments.submit')
   submit(@Payload() d: any) { return this.service.submitPayment(d.user_id, d.user_name, d.dto); }
@@ -28,5 +28,5 @@ export class PaymentsController {
   bulkReminders(@Payload() d: any) { return this.service.sendBulkReminders(d.billing_month, d.user_id, d.user_name); }
 
   @MessagePattern('payments.resident_bill_status')
-  residentBillStatus(@Payload() d: any) { return this.service.getResidentBillStatus(d.resident_id, d.billing_month); }
+  residentBillStatus(@Payload() d: any): Promise<any[]> { return this.service.getResidentBillStatus(d.resident_id, d.billing_month); }
 }

@@ -19,68 +19,68 @@ export class ComplaintAssignment {
 
   // ── Links ─────────────────────────────────────────────────────────────────
   @Prop({ type: Types.ObjectId, ref: 'Complaint', required: true })
-  complaint_id: Types.ObjectId;
+  complaint_id!: Types.ObjectId;
 
   // Worker from auth_service (cross-service reference — no DB FK)
   @Prop({ type: Types.ObjectId, required: true })
-  worker_id: Types.ObjectId;
+  worker_id!: Types.ObjectId;
 
   @Prop({ required: true })
-  worker_name: string;         // Denormalized for fast display
+  worker_name!: string;         // Denormalized for fast display
 
   @Prop()
-  worker_expertise: string;    // Plumber / Electrician etc.
+  worker_expertise!: string;    // Plumber / Electrician etc.
 
   // ── Assigned by ───────────────────────────────────────────────────────────
   @Prop({ type: Types.ObjectId, required: true })
-  assigned_by_id: Types.ObjectId;   // admin_maintenance user
+  assigned_by_id!: Types.ObjectId;   // admin_maintenance user
 
   @Prop({ required: true })
-  assigned_by_name: string;
+  assigned_by_name!: string;
 
   // ── Scheduling ────────────────────────────────────────────────────────────
   @Prop({ required: true })
-  assigned_date: Date;
+  assigned_date!: Date;
 
   @Prop({ default: null })
-  scheduled_visit_date: Date;   // When the worker plans to visit
+  scheduled_visit_date!: Date;   // When the worker plans to visit
 
   // ── Status ────────────────────────────────────────────────────────────────
   @Prop({ type: String, enum: AssignmentStatus, default: AssignmentStatus.ASSIGNED })
-  status: AssignmentStatus;
+  status!: AssignmentStatus;
 
   // ── Worker actions ────────────────────────────────────────────────────────
   @Prop({ default: null })
-  accepted_at: Date;
+  accepted_at!: Date;
 
   @Prop({ default: null })
-  rejection_reason: string;   // Filled when worker rejects
+  rejection_reason!: string;   // Filled when worker rejects
 
   @Prop({ default: null })
-  work_started_at: Date;
+  work_started_at!: Date;
 
   // ── Resolution ────────────────────────────────────────────────────────────
   @Prop({ default: null })
-  resolved_at: Date;
+  resolved_at!: Date;
 
   @Prop({ default: null })
-  work_notes: string;          // Worker's notes after completing
+  work_notes!: string;          // Worker's notes after completing
 
   @Prop({ type: [String], default: [] })
-  completion_images: string[]; // Photos after work done
+  completion_images!: string[]; // Photos after work done
 
   // ── Extra charges (if any spare parts used) ───────────────────────────────
   @Prop({ default: false })
-  has_extra_charges: boolean;
+  has_extra_charges!: boolean;
 
   @Prop({ default: null })
-  extra_charge_amount: number;
+  extra_charge_amount!: number;
 
   @Prop({ default: null })
-  extra_charge_description: string;
+  extra_charge_description!: string;
 
   @Prop({ default: false })
-  extra_charges_approved: boolean;
+  extra_charges_approved!: boolean;
 }
 
 export const ComplaintAssignmentSchema = SchemaFactory.createForClass(ComplaintAssignment);

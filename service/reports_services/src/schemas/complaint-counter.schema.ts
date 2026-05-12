@@ -11,10 +11,10 @@ export type ComplaintCounterDocument = HydratedDocument<ComplaintCounter>;
 @Schema({ collection: 'complaint_counters' })
 export class ComplaintCounter {
   @Prop({ required: true, unique: true })
-  year: number;
+  year!: number;
 
   @Prop({ default: 0 })
-  seq: number;
+  seq!: number;
 }
 
 export const ComplaintCounterSchema = SchemaFactory.createForClass(ComplaintCounter);
