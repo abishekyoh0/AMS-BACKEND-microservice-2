@@ -45,5 +45,4 @@ async function bootstrap() {
   console.log(`Swagger docs → http://localhost:3002/api/apartment/docs`);
 }
 
-bootstrap();  
-
+bootstrap();   
