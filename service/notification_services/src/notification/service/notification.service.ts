@@ -1,188 +1,238 @@
-// notification.service.ts
-
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Notification } from '../schema/notification.schema';
+import { Notification, NotificationDocument, NotifStatus } from '../schema/notification.schema';
 import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectModel(Notification.name)
-    private model: Model<Notification>,
-    @InjectModel('User') private userModel: Model<any>,
+    private model: Model<NotificationDocument>,
   ) {}
 
-  //  Create single notification
-  async create(dto: any) {
-    try {
-      if (!dto.receiverId) {
-        throw new BadRequestException('receiverId is required');
-      }
+  // ─────────────────────────────────────────────────────────────────────────
+  // Create for a specific user (complaint assigned, bill due, etc.)
+  // Called via TCP from other services or gateway
+  // ─────────────────────────────────────────────────────────────────────────
+  async createForUser(dto: {
+    receiverId: string;
+    title: string;
+    message: string;
+    category?: string;
+    priority?: string;
+    senderId?: string;
+    senderType?: string;
+    referenceId?: string;
+    referenceType?: string;
+    redirectUrl?: string;
+    meta?: Record<string, any>;
+    actionRequired?: boolean;
+  }) {
+    if (!dto.receiverId) throw new BadRequestException('receiverId is required');
 
-      return await this.model.create({
-        ...dto,
-        receiverId: new Types.ObjectId(dto.receiverId),
-        senderId: dto.senderId
-          ? new Types.ObjectId(dto.senderId)
-          : undefined,
-        senderType: dto.senderId ? 'USER' : 'SYSTEM',
-        receiverType: 'USER',
-      });
-    } catch (error) {
-      console.error('CREATE ERROR:', error);
-      throw error;
-    }
-  }
-
-  //  Admin broadcast / targeted send
-  async sendFromAdmin(dto: any) {
-    const adminId = dto.senderId;
-
-    let users: any[] = [];
-
-    //  direct users
-    if (dto.userIds?.length) {
-      users = dto.userIds;
-    }
-
-    // role-based
-    else if (dto.roles?.length) {
-      const roleUsers = await this.userModel.find({
-        role: { $in: dto.roles },
-      });
-
-      users = roleUsers.map((u) => u._id);
-    }
-
-    // panel-based (FIXED → using role)
-    
-    else if (dto.targetPanel) {
-      const panelUsers = await this.userModel.find({
-        role: dto.targetPanel, // 🔥 FIXED
-      });
-
-      console.log('FOUND USERS:', panelUsers);
-
-      users = panelUsers.map((u) => u._id);
-    }
-
-    //  broadcast 
-
-    else {
-      const all = await this.userModel.find({});
-      users = all.map((u) => u._id);
-    }
-
-    //  prevent empty insert
-    if (users.length === 0) {
-      throw new BadRequestException(
-        'No users found for given criteria',
-      );
-    }
-
-    const notifications = users.map((userId) => ({
+    return this.model.create({
+      targetType: 'user',
+      receiverId: new Types.ObjectId(dto.receiverId),
       title: dto.title,
       message: dto.message,
       category: dto.category,
-      priority: dto.priority,
-      actionRequired: dto.actionRequired || false,
-      tags: dto.tags || [],
+      priority: dto.priority || 'LOW',
+      senderId: dto.senderId ? new Types.ObjectId(dto.senderId) : undefined,
+      senderType: dto.senderType || 'SYSTEM',
+      referenceId: dto.referenceId || undefined,
+      referenceType: dto.referenceType || undefined,
+      redirectUrl: dto.redirectUrl || undefined,
       meta: dto.meta || {},
+      actionRequired: dto.actionRequired || false,
+    });
+  }
 
-      senderId: adminId ? new Types.ObjectId(adminId) : undefined, 
-      receiverId: new Types.ObjectId(userId),
+  // ─────────────────────────────────────────────────────────────────────────
+  // Broadcast to a role (all residents, all security, etc.)
+  // targetRole matches auth service role values:
+  //   'resident', 'admin', 'admin_security', 'admin_maintenance',
+  //   'gatekeeper', 'accountant', 'admin_account'
+  // ─────────────────────────────────────────────────────────────────────────
+  async broadcastToRole(dto: {
+    targetRole: string;         // e.g. 'resident'
+    title: string;
+    message: string;
+    category?: string;
+    priority?: string;
+    senderId?: string;
+    senderType?: string;
+    referenceId?: string;
+    referenceType?: string;
+    actionRequired?: boolean;
+    meta?: Record<string, any>;
+  }) {
+    return this.model.create({
+      targetType: 'role',
+      targetRole: dto.targetRole,
+      title: dto.title,
+      message: dto.message,
+      category: dto.category || 'SYSTEM',
+      priority: dto.priority || 'MEDIUM',
+      senderId: dto.senderId ? new Types.ObjectId(dto.senderId) : undefined,
+      senderType: dto.senderType || 'SYSTEM',
+      referenceId: dto.referenceId || undefined,
+      referenceType: dto.referenceType || undefined,
+      actionRequired: dto.actionRequired || false,
+      meta: dto.meta || {},
+    });
+  }
 
-      senderType: 'ADMIN',
-      receiverType: 'USER',
-
-      panelType: dto.targetPanel ?? 'ADMIN',
+  // ─────────────────────────────────────────────────────────────────────────
+  // Broadcast to multiple roles at once (emergency: residents + maintenance + admin)
+  // Creates one notification document per role
+  // ─────────────────────────────────────────────────────────────────────────
+  async broadcastToRoles(dto: {
+    roles: string[];            // e.g. ['resident', 'admin_maintenance', 'admin']
+    title: string;
+    message: string;
+    category?: string;
+    priority?: string;
+    senderId?: string;
+    referenceId?: string;
+    referenceType?: string;
+    actionRequired?: boolean;
+  }) {
+    const docs = dto.roles.map(role => ({
+      targetType: 'role',
+      targetRole: role,
+      title: dto.title,
+      message: dto.message,
+      category: dto.category || 'SYSTEM',
+      priority: dto.priority || 'HIGH',
+      senderId: dto.senderId ? new Types.ObjectId(dto.senderId) : null,
+      senderType: 'SYSTEM',
+      referenceId: dto.referenceId || null,
+      referenceType: dto.referenceType || null,
+      actionRequired: dto.actionRequired || false,
     }));
 
-    return this.model.insertMany(notifications);
+    return this.model.insertMany(docs);
   }
 
-  //  Get notifications
-  async findAll(userId: string, query: any) {
+  // ─────────────────────────────────────────────────────────────────────────
+  // Broadcast to ALL users
+  // ─────────────────────────────────────────────────────────────────────────
+  async broadcastToAll(dto: {
+    title: string;
+    message: string;
+    category?: string;
+    priority?: string;
+    senderId?: string;
+    referenceId?: string;
+    referenceType?: string;
+    actionRequired?: boolean;
+  }) {
+    return this.model.create({
+      targetType: 'all',
+      title: dto.title,
+      message: dto.message,
+      category: dto.category || 'SYSTEM',
+      priority: dto.priority || 'HIGH',
+      senderId: dto.senderId ? new Types.ObjectId(dto.senderId) : undefined,
+      senderType: 'SYSTEM',
+      referenceId: dto.referenceId || undefined,
+      referenceType: dto.referenceType || undefined,
+      actionRequired: dto.actionRequired || true,
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Get notifications for a user
+  // Matches: user-specific OR role-based for user's role OR all-type
+  // ─────────────────────────────────────────────────────────────────────────
+  async findMine(userId: string, userRole: string, query: {
+    category?: string;
+    status?: string;
+    priority?: string;
+    page?: number;
+    limit?: number;
+  }) {
     const filter: any = {
-      receiverId: new Types.ObjectId(userId),
       isDeleted: { $ne: true },
+      $or: [
+        { targetType: 'user', receiverId: new Types.ObjectId(userId) },
+        { targetType: 'role', targetRole: userRole },
+        { targetType: 'all' },
+      ],
     };
 
-    if (query.panelType) filter.panelType = query.panelType;
-    if (query.status) filter.status = query.status;
-    if (query.priority) filter.priority = query.priority;
     if (query.category) filter.category = query.category;
-    if (query.actionRequired !== undefined)
-      filter.actionRequired = query.actionRequired;
+    if (query.status)   filter.status = query.status;
+    if (query.priority) filter.priority = query.priority;
 
-    return this.model.find(filter).sort({ createdAt: -1 });
+    const page  = Number(query.page)  || 1;
+    const limit = Number(query.limit) || 20;
+    const skip  = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.model.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      this.model.countDocuments(filter),
+    ]);
+
+    return { data, total, page, limit, pages: Math.ceil(total / limit) };
   }
 
-  //  Mark read
-  async markRead(id: string, userId: string) {
-  return this.model.findOneAndUpdate(
-    {
-      _id: id,
-      receiverId: new Types.ObjectId(userId),
-    },
-    {
-      status: 'READ',
-      isRead: true,
-      isSeen: true,
-    },
-    { new: true },
-  );
-}
-
-  //  Mark all read
- async markAll(userId: string, panelType: string) {
-  return this.model.updateMany(
-    {
-      receiverId: new Types.ObjectId(userId),
-      panelType,
-      status: 'UNREAD',
-    },
-    {
-      status: 'READ',
-      isRead: true,
-      isSeen: true,
-    },
-  );
-}
-
-  //  Soft delete
-  async remove(id: string, userId: string) {
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mark one notification as read
+  // ─────────────────────────────────────────────────────────────────────────
+  async markRead(id: string, userId: string, userRole: string) {
     return this.model.findOneAndUpdate(
       {
         _id: id,
-        receiverId: new Types.ObjectId(userId),
+        isDeleted: { $ne: true },
+        $or: [
+          { targetType: 'user', receiverId: new Types.ObjectId(userId) },
+          { targetType: 'role', targetRole: userRole },
+          { targetType: 'all' },
+        ],
       },
-      { isDeleted: true },
+      { status: NotifStatus.READ, isRead: true, isSeen: true },
       { new: true },
     );
   }
 
-  //  Badge counts
-  async getCounts(userId: string, panelType: string) {
-    const base = {
-      receiverId: new Types.ObjectId(userId),
-      panelType,
-      isDeleted: { $ne: true },
-    };
-
-    return {
-      total: await this.model.countDocuments(base),
-      unread: await this.model.countDocuments({
-        ...base,
-        status: 'UNREAD',
-      }),
-      actionRequired: await this.model.countDocuments({
-        ...base,
-        status: 'UNREAD',
-        actionRequired: true,
-      }),
-    };
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mark all as read for a user
+  // ─────────────────────────────────────────────────────────────────────────
+  async markAllRead(userId: string, userRole: string) {
+    return this.model.updateMany(
+      {
+        isDeleted: { $ne: true },
+        status: NotifStatus.UNREAD,
+        $or: [
+          { targetType: 'user', receiverId: new Types.ObjectId(userId) },
+          { targetType: 'role', targetRole: userRole },
+          { targetType: 'all' },
+        ],
+      },
+      { status: NotifStatus.READ, isRead: true, isSeen: true },
+    );
   }
-} 
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Badge counts for UI
+  // ─────────────────────────────────────────────────────────────────────────
+  async getCounts(userId: string, userRole: string) {
+    const base: any = {
+      isDeleted: { $ne: true },
+      $or: [
+        { targetType: 'user', receiverId: new Types.ObjectId(userId) },
+        { targetType: 'role', targetRole: userRole },
+        { targetType: 'all' },
+      ],
+    };
+
+    const [total, unread, actionRequired] = await Promise.all([
+      this.model.countDocuments(base),
+      this.model.countDocuments({ ...base, status: NotifStatus.UNREAD }),
+      this.model.countDocuments({ ...base, status: NotifStatus.UNREAD, actionRequired: true }),
+    ]);
+
+    return { total, unread, actionRequired };
+  }
+}

@@ -8,7 +8,7 @@ import { UsersGatewayController } from './users/users.gateway.controller';
 import { GatesGatewayController } from './gates/gates.gateway.controller';
 import { ComplaintsGatewayController } from './complaints/complaints.gateway.controller';
 import { PaymentsGatewayController } from './payments/payments.gateway.controller';
-
+import { NotificationsGatewayController } from './notifications/notifications.gateway.controller';
 
 @Module({
   imports: [
@@ -64,6 +64,7 @@ import { PaymentsGatewayController } from './payments/payments.gateway.controlle
     GatesGatewayController,
     ComplaintsGatewayController,
     PaymentsGatewayController,
+    NotificationsGatewayController,
   ],
 
   providers: [

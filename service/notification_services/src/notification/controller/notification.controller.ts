@@ -1,54 +1,44 @@
-// notification.controller.ts
-
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  Param,
-  Patch,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { NotificationService } from '../service/notification.service';
 
+/**
+ * HTTP controller — for Swagger docs only.
+ * Actual calls come through the TCP controller via API Gateway.
+ */
+@ApiTags('notifications')
+@ApiBearerAuth()
 @Controller('notifications')
 export class NotificationController {
   constructor(private service: NotificationService) {}
 
-  //  Create (single)
-  @Post()
-  create(@Body() dto: any) {
-    return this.service.create(dto);
-  }
-
-  //  Admin send
-  @Post('admin')
-  adminSend(@Body() dto: any) {
-    return this.service.sendFromAdmin(dto);
-  }
-
-  //  Get user notifications
   @Get()
-  findAll(@Req() req: any, @Query() query: any) {
-    return this.service.findAll(req.user.id, query);
+  @ApiOperation({ summary: 'Get my notifications (use via gateway: GET /api/notifications)' })
+  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'status', required: false, enum: ['UNREAD', 'READ'] })
+  @ApiQuery({ name: 'priority', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  findMine(@Query() query: any) {
+    return { message: 'Use via API Gateway at /api/notifications/mine', query };
   }
 
-  //  Mark as read
   @Patch(':id/read')
-  markRead(@Req() req: any, @Param('id') id: string) {
-    return this.service.markRead(id, req.user.id);
+  @ApiOperation({ summary: 'Mark notification as read' })
+  @ApiParam({ name: 'id' })
+  markRead(@Param('id') id: string) {
+    return { message: 'Use via API Gateway at /api/notifications/:id/read' };
   }
 
-  //  Mark all read
-  @Patch('mark-all/:panelType')
-  markAll(@Req() req: any, @Param('panelType') panelType: string) {
-    return this.service.markAll(req.user.id, panelType);
+  @Patch('mark-all-read')
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  markAllRead() {
+    return { message: 'Use via API Gateway at /api/notifications/mark-all-read' };
   }
 
-  //  Counts (badge UI)
-  @Get('counts/:panelType')
-  counts(@Req() req: any, @Param('panelType') panelType: string) {
-    return this.service.getCounts(req.user.id, panelType);
+  @Get('counts')
+  @ApiOperation({ summary: 'Get unread badge counts' })
+  counts() {
+    return { message: 'Use via API Gateway at /api/notifications/counts' };
   }
-}  
+}

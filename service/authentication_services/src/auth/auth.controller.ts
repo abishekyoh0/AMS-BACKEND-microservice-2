@@ -9,6 +9,15 @@ import {
   ResidentLoginDto,
   VerifyResidentOtpDto,
 } from './dto/login.dto';
+
+import { 
+  ForgotPasswordDto, 
+  VerifyResetOtpDto, 
+  ResetPasswordDto,
+  ChangePasswordDto 
+} from './dto/passwordreset.dto';
+
+
 import { CompleteResidentProfileDto } from './dto/complete-profile.dto';
 
 /**
@@ -91,4 +100,34 @@ export class AuthController {
     return this.authService.verifyOtp(data.user_id, data.otp);
   }
   
+
+  @MessagePattern('auth.forgot_password')
+forgotPassword(@Payload() dto: ForgotPasswordDto) {
+  return this.authService.forgotPassword(dto.email);
+}
+
+@MessagePattern('auth.verify_reset_otp')
+verifyResetOtp(@Payload() dto: VerifyResetOtpDto) {
+  return this.authService.verifyResetOtp(dto.email, dto.otp);
+}
+
+@MessagePattern('auth.reset_password')
+resetPassword(@Payload() dto: ResetPasswordDto) {
+  return this.authService.resetPassword(dto.email, dto.otp, dto.new_password);
+}
+
+@MessagePattern('auth.change_password')
+changePassword(@Payload() data: { user_id: string; dto: ChangePasswordDto }) {
+  return this.authService.changePassword(data.user_id, data.dto.current_password, data.dto.new_password);
+}
+
+@MessagePattern('auth.test_email')
+async testEmail(@Payload() data: { email: string }) {
+  try {
+    await this.authService.testEmailSending(data.email);
+    return { success: true, message: 'Test email sent' };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
 }

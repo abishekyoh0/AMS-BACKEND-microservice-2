@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller';
 import { User, UserSchema } from '../schemas/user.schema';
 import { Gate, GateSchema, GateSchedule, GateScheduleSchema, GatekeeperSession, GatekeeperSessionSchema } from '../schemas/gate.schema';
 import { ResidentProfile, ResidentProfileSchema } from '../schemas/resident-profile.schema';
+import { EmailModule } from '../email/email.module';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [
@@ -22,9 +24,10 @@ import { ResidentProfile, ResidentProfileSchema } from '../schemas/resident-prof
         signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as any,
       }),
     }),
+    EmailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, EmailService],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}
