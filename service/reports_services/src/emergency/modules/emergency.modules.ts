@@ -10,14 +10,16 @@ import { EmergencyTcpController } from '../controllers/emergency.tcp.controller'
 import { EmergencyGateway } from '../emergency.gateway';
 import { EscalationScheduler } from '../escalation.scheduler';
 import { EmergencyService } from '../services/emergency.service';
+import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     MongooseModule.forFeature([
-      { name: Emergency.name,    schema: EmergencySchema },
+      { name: Emergency.name, schema: EmergencySchema },
       { name: ReportStatus.name, schema: ReportStatusSchema },
-    ]),
+    ]), 
+    KafkaModule,
     // TCP client — sends notifications when emergency is created/resolved
     ClientsModule.register([
       {
@@ -37,4 +39,4 @@ import { EmergencyService } from '../services/emergency.service';
   providers: [EmergencyService, EmergencyGateway, EscalationScheduler],
   exports: [EmergencyService],
 })
-export class EmergencyModule {}
+export class EmergencyModule { }
