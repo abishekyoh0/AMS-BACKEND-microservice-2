@@ -1,100 +1,90 @@
-import {
-  Controller, Get, Post, Body, Param, Patch, Delete, Query,
-} from '@nestjs/common';
-
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateEmergencyDto } from '../dto/create-emergency.dto';
 import { UpdateEmergencyDto } from '../dto/update-emergency.dto';
 import { ReportStatusEnum } from '../../schemas/report-status.schema';
 import { EmergencyService } from '../services/emergency.service';
 
+@ApiTags('emergency')
+@ApiBearerAuth('Bearer')
 @Controller('emergency')
 export class EmergencyController {
   constructor(private readonly emergencyService: EmergencyService) {}
 
-
   @Post()
+  @ApiOperation({ summary: 'Raise emergency (gatekeeper/admin_security/admin)', description: 'alertId, time, acknowledged, status are auto-generated — do NOT send them.' })
+  @ApiBody({ type: CreateEmergencyDto })
+  @ApiResponse({ status: 201, description: 'Emergency created. Notifications sent. alertId auto-generated.' })
   create(@Body() dto: CreateEmergencyDto) {
-    return this.emergencyService.create(dto);
-  }
+  return this.emergencyService.create(dto);
+}
 
   @Get()
-  findAll() {
-    return this.emergencyService.findAll();
-  }
+  @ApiOperation({ summary: 'List all emergencies' })
+  findAll() { return this.emergencyService.findAll(); }
 
   @Get('active')
-  getActive() {
-    return this.emergencyService.getActive();
-  }
+  @ApiOperation({ summary: 'Active emergencies (status = Active)' })
+  getActive() { return this.emergencyService.getActive(); }
 
   @Get('history')
-  getHistory() {
-    return this.emergencyService.getHistory();
-  }
+  @ApiOperation({ summary: 'Full emergency history' })
+  getHistory() { return this.emergencyService.getHistory(); }
 
   @Get('stats/dashboard')
-  getStats() {
-    return this.emergencyService.getStats();
-  }
+  @ApiOperation({ summary: 'Dashboard: total, active, resolved, highPriority' })
+  getStats() { return this.emergencyService.getStats(); }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.emergencyService.findOne(id);
-  }
+  @Patch('resolve/:id')
+  @ApiOperation({ summary: 'Resolve emergency (admin/admin_security)' })
+  @ApiParam({ name: 'id' })
+  @ApiBody({ schema: { properties: { resolution_note: { type: 'string', example: 'Fire extinguished. Building cleared.' } } } })
+  @ApiResponse({ status: 200, description: 'Resolved. Resolution notification sent.' })
+  resolve(@Param('id') id: string) {
+  return this.emergencyService.resolveEmergency(id);
+}
+
+  @Patch('acknowledge/:id')
+  @ApiOperation({ summary: 'Acknowledge (all users) — increments count' })
+  @ApiParam({ name: 'id' })
+  acknowledge(@Param('id') id: string) { return this.emergencyService.acknowledge(id); }
 
   @Patch(':id')
+  @ApiParam({ name: 'id' })
   update(@Param('id') id: string, @Body() dto: UpdateEmergencyDto) {
     return this.emergencyService.update(id, dto);
   }
 
-  @Patch('resolve/:id')
-  resolve(@Param('id') id: string) {
-    return this.emergencyService.resolveEmergency(id);
-  }
-
-  @Patch('acknowledge/:id')
-  acknowledge(@Param('id') id: string) {
-    return this.emergencyService.acknowledge(id);
-  }
-
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.emergencyService.remove(id);
-  }
+  @ApiParam({ name: 'id' })
+  remove(@Param('id') id: string) { return this.emergencyService.remove(id); }
+
+  @Get(':id')
+  @ApiParam({ name: 'id' })
+  findOne(@Param('id') id: string) { return this.emergencyService.findOne(id); }
 
   @Post('report/all')
+  @ApiOperation({ summary: 'Request Excel export of all emergencies' })
+  @ApiQuery({ name: 'requestedBy', required: false })
   generateAllReport(@Query('requestedBy') requestedBy?: string) {
     return this.emergencyService.requestExcelReport('ALL', undefined, requestedBy);
   }
 
   @Post('report/:id')
-  generateSingleReport(
-    @Param('id') id: string,
-    @Query('requestedBy') requestedBy?: string,
-  ) {
+  @ApiParam({ name: 'id' })
+  generateSingleReport(@Param('id') id: string, @Query('requestedBy') requestedBy?: string) {
     return this.emergencyService.requestExcelReport('SINGLE', id, requestedBy);
   }
 
   @Get('report/status/:reportId')
+  @ApiParam({ name: 'reportId' })
   getReportStatus(@Param('reportId') reportId: string) {
     return this.emergencyService.getReportStatus(reportId);
   }
 
   @Get('report/history')
+  @ApiQuery({ name: 'requestedBy', required: false })
   getReportHistory(@Query('requestedBy') requestedBy?: string) {
     return this.emergencyService.getReportHistory(requestedBy);
-  }
-
-  @Patch('report/status/:reportId')
-  updateReportStatus(
-    @Param('reportId') reportId: string,
-    @Body() body: { status: ReportStatusEnum; downloadUrl?: string; errorMessage?: string },
-  ) {
-    return this.emergencyService.updateReportStatus(
-      reportId,
-      body.status,
-      body.downloadUrl,
-      body.errorMessage,
-    );
   }
 }
