@@ -43,6 +43,7 @@ async function bootstrap() {
     .addTag('reminders', 'Send payment reminders')
     .build();
 
+    
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: { persistAuthorization: true },

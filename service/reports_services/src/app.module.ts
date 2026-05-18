@@ -10,6 +10,7 @@ import { EmergencyModule } from './emergency/modules/emergency.modules';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
+
         uri: config.get<string>('MONGODB_URI', 'mongodb://localhost:27017/ams_reports'),
       }),
       inject: [ConfigService],
