@@ -4,17 +4,17 @@ import { EmergencyService } from '../services/emergency.service';
 
 @Controller()
 export class EmergencyTcpController {
-  constructor(private readonly service: EmergencyService) {}
+  constructor(private readonly service: EmergencyService) { }
 
   @MessagePattern('emergency.create')
- create(@Payload() d: any) {
-  return this.service.create(d.dto);
-}
+  create(@Payload() d: any) {
+    return this.service.create(d.dto);
+  }
 
   @MessagePattern('emergency.resolve')
-resolve(@Payload() d: any) {
-  return this.service.resolveEmergency(d.emergency_id);
-}
+  resolve(@Payload() d: any) {
+    return this.service.resolveEmergency(d.emergency_id);
+  }
   @MessagePattern('emergency.acknowledge')
   acknowledge(@Payload() d: any) { return this.service.acknowledge(d.emergency_id); }
 
