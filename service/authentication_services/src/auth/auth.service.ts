@@ -17,7 +17,7 @@ import { Gate, GateDocument, GateSchedule, GateScheduleDocument, GatekeeperSessi
 import { ResidentProfile, ResidentProfileDocument } from '../schemas/resident-profile.schema';
 
 import { Role } from '../common/enums/roles.enum';
-import { UserStatus, SessionStatus } from '../common/enums/status.enum';
+import { UserStatus, SessionStatus, GateStatus, ShiftDay } from '../common/enums/status.enum';
 
 import {
   AdminLoginDto,
@@ -31,7 +31,7 @@ import { CompleteResidentProfileDto } from './dto/complete-profile.dto';
 
 @Injectable()
 export class AuthService {
-  private transporter: nodemailer.Transporter;
+  private transporter!: nodemailer.Transporter;
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
@@ -104,9 +104,9 @@ export class AuthService {
       return { access_token: this.sign(user), user: this.safe(user) };
     }
 
-    // gatekeeper: gate_id is mandatory
+    // gatekeeper: gate_id is mandatory 
     if (!dto.gate_id) {
-      const gates = await this.gateModel.find({ status: 'active' }).select('gate_name location').lean();
+      const gates = await this.gateModel.find({ status: GateStatus.ACTIVE }).select('gate_name location').lean();
       return {
         requires_gate_selection: true,
         available_gates: gates,
@@ -354,7 +354,7 @@ export class AuthService {
   async getTodaySchedule(gatekeeperId: string) {
     const result = await this.findTodaySchedule(gatekeeperId);
     if (!result?.scheduled) {
-      const gates = await this.gateModel.find({ status: 'active' }).select('gate_name location').lean();
+      const gates = await this.gateModel.find({ status: GateStatus.ACTIVE }).select('gate_name location').lean();
       return { scheduled: false, available_gates: gates };
     }
     return result;
@@ -368,7 +368,10 @@ export class AuthService {
       .findOne({
         gatekeeper: new Types.ObjectId(gatekeeperId),
         is_active: true,
-        $or: [{ specific_date: today }, { day_of_week: dayName }],
+        $or: [
+          { specific_date: today },
+          { day_of_week: dayName as ShiftDay }  // Cast to ShiftDay enum
+        ],
       })
       .sort({ specific_date: -1 })
       .populate('gate', 'gate_name location status')
@@ -455,7 +458,7 @@ export class AuthService {
 
     // Generate and send OTP
     await this.generateAndSendOtp(user._id, user.email, user.full_name, 'reset');
-    
+
     return {
       message: 'OTP sent to your registered email',
       expires_in: '10 minutes',
@@ -474,16 +477,21 @@ export class AuthService {
     if (!user.otp || user.otp !== otp) {
       throw new BadRequestException('Invalid OTP');
     }
-    
+
     if (new Date() > new Date(user.otp_expires_at)) {
       throw new BadRequestException('OTP has expired. Please request a new one');
     }
+    await this.userModel.findByIdAndUpdate(user._id, {
+      otp: null,
+      otp_expires_at: null,
+    });
 
     // Generate a temporary token for password reset (valid 15 minutes)
     const reset_token = this.jwtService.sign(
       { sub: String(user._id), purpose: 'password_reset', email: user.email },
       { expiresIn: '15m' },
     );
+
 
     return {
       valid: true,
@@ -504,7 +512,7 @@ export class AuthService {
     if (!user.otp || user.otp !== otp) {
       throw new BadRequestException('Invalid OTP');
     }
-    
+
     if (new Date() > new Date(user.otp_expires_at)) {
       throw new BadRequestException('OTP has expired. Please request a new one');
     }
@@ -564,7 +572,7 @@ export class AuthService {
         html,
       });
       console.log(`✅ Email sent to ${to}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error(`❌ Failed to send email to ${to}: ${error.message}`);
     }
   }
@@ -586,7 +594,7 @@ export class AuthService {
     };
 
     const template = templates[purpose] || templates.login;
-    
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #1a56db; padding: 20px; text-align: center; color: white;">
@@ -631,7 +639,7 @@ export class AuthService {
 
   private async generateAndSendOtp(userId: Types.ObjectId | string, email: string, name: string, purpose: 'login' | 'reset' | 'verify' = 'login') {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     await this.userModel.findByIdAndUpdate(userId, {
       otp,
       otp_expires_at: new Date(Date.now() + 10 * 60 * 1000),
@@ -640,7 +648,7 @@ export class AuthService {
     // Send email
     await this.sendOtpEmail(email, name, otp, purpose);
     console.log(`[OTP] Generated for ${email}: ${otp}`);
-    
+
     return otp;
   }
 
@@ -703,7 +711,7 @@ export class AuthService {
 
 
   async testEmailSending(to: string) {
-  const testHtml = `
+    const testHtml = `
     <div style="font-family: Arial, sans-serif;">
       <h2>AMS Email Test</h2>
       <p>If you're reading this, your email configuration is working correctly!</p>
@@ -712,8 +720,8 @@ export class AuthService {
       <p>Time: ${new Date().toISOString()}</p>
     </div>
   `;
-  
-  await this.sendEmail(to, 'AMS Email Configuration Test', testHtml);
-  console.log(`Test email sent to ${to}`);
-}
+
+    await this.sendEmail(to, 'AMS Email Configuration Test', testHtml);
+    console.log(`Test email sent to ${to}`);
+  }
 }

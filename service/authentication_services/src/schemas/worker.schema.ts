@@ -12,32 +12,32 @@ export type WorkerDocument = Worker & Document;
 @Schema({ timestamps: true, collection: 'workers' })
 export class Worker {
   @Prop({ required: true, trim: true })
-  full_name: string;
+  full_name!: string;
 
   @Prop({ trim: true })
-  mobile: string;
+  mobile!: string;
 
   @Prop({ trim: true })
-  expertise: string; // Plumber / Electrician / Carpenter / Painter
+  expertise!: string; // Plumber / Electrician / Carpenter / Painter
 
   @Prop()
-  address: string;
+  address!: string;
 
   @Prop()
-  id_proof_type: string; // Aadhar / Passport / Driving License
+  id_proof_type!: string; // Aadhar / Passport / Driving License
 
   @Prop()
-  id_proof_number: string;
+  id_proof_number!: string;
 
   @Prop({ type: String, enum: WorkerStatus, default: WorkerStatus.ACTIVE })
-  status: WorkerStatus;
+  status!: WorkerStatus;
 
   // Created by ADMIN_MAINTENANCE
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  created_by: Types.ObjectId;
+  created_by!: Types.ObjectId;
 
   @Prop()
-  notes: string;
+  notes!: string;
 }
 
 export const WorkerSchema = SchemaFactory.createForClass(Worker);

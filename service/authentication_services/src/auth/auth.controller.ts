@@ -126,7 +126,7 @@ async testEmail(@Payload() data: { email: string }) {
   try {
     await this.authService.testEmailSending(data.email);
     return { success: true, message: 'Test email sent' };
-  } catch (error) {
+  } catch (error:any) {
     return { success: false, message: error.message };
   }
 }

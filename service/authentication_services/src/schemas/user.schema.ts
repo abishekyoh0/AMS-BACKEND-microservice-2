@@ -55,8 +55,9 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
+// ✅ CORRECT — add return to guard clause
 UserSchema.pre('save', async function () {
-  if (!this.isModified('password') || !this['password']) 
+  if (!this.isModified('password') || !this['password']) return;
   this['password'] = await bcrypt.hash(this['password'], 10);
 });
 

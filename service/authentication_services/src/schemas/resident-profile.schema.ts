@@ -11,71 +11,71 @@ export type ResidentProfileDocument = ResidentProfile & Document;
 @Schema({ timestamps: true, collection: 'resident_profiles' })
 export class ResidentProfile {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
-  user: Types.ObjectId;
+  user!: Types.ObjectId;
 
   @Prop({ type: String, enum: ResidentType, default: ResidentType.OWNER })
-  resident_type: ResidentType;
+  resident_type!: ResidentType;
 
   /** Cross-service reference to apartment_services flat */
   @Prop({ type: Types.ObjectId, default: null })
-  flat_id: Types.ObjectId;
+  flat_id!: Types.ObjectId;
 
   /** Block + unit set by admin on creation */
   @Prop()
-  block: string;
+  block!: string;
 
   @Prop()
-  unit_number: string;
+  unit_number!: string;
 
   /** Filled during move-in form */
   @Prop()
-  id_proof_type: string;       // Aadhar / Passport / Driving License
+  id_proof_type!: string;       // Aadhar / Passport / Driving License
 
   @Prop()
-  id_proof_number: string;
+  id_proof_number!: string;
 
   @Prop()
-  id_proof_url: string;        // S3 / storage URL
+  id_proof_url!: string;        // S3 / storage URL
 
   @Prop()
-  address_proof_url: string;
+  address_proof_url!: string;
 
   @Prop()
-  permanent_address: string;
+  permanent_address!: string;
 
   /** Emergency contact */
   @Prop()
-  emergency_contact_name: string;
+  emergency_contact_name!: string;
 
   @Prop()
-  emergency_contact_relation: string;
+  emergency_contact_relation!: string;
 
   @Prop()
-  emergency_contact_mobile: string;
+  emergency_contact_mobile!: string;
 
   /** Move-in / move-out */
   @Prop()
-  move_in_date: string;        // YYYY-MM-DD
+  move_in_date!: string;        // YYYY-MM-DD
 
   @Prop()
-  move_out_date: string;
+  move_out_date!: string;
 
   /** Vehicle (primary) */
   @Prop()
-  vehicle_number: string;
+  vehicle_number!: string;
 
   @Prop()
-  vehicle_type: string;        // Car / Bike / Other
+  vehicle_type!: string;        // Car / Bike / Other
 
   @Prop()
-  vehicle_model: string;
+  vehicle_model!: string;
 
   @Prop()
-  vehicle_color: string;
+  vehicle_color!: string;
 
   /** Parking slot assigned (cross-service ref) */
   @Prop()
-  parking_slot: string;
+  parking_slot!: string;
 
   /** Additional family members added via profile update (stored as sub-docs) */
   @Prop({
@@ -88,7 +88,7 @@ export class ResidentProfile {
     ],
     default: [],
   })
-  family_members: { name: string; relation: string; mobile: string }[];
+  family_members!: { name: string; relation: string; mobile: string }[];
 }
 
 export const ResidentProfileSchema = SchemaFactory.createForClass(ResidentProfile);

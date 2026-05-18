@@ -11,12 +11,12 @@ import {
 export class AdminLoginDto {
   @ApiProperty({ example: 'admin@ams.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Admin@1234', minLength: 6 })
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 }
 
 // ─── Panel 2: Security login ─────────────────────────────────────────────────
@@ -25,12 +25,12 @@ export class AdminLoginDto {
 export class SecurityLoginDto {
   @ApiProperty({ example: 'security@ams.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Security@1234', minLength: 6 })
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @ApiPropertyOptional({
     example: '665f1b2c3d4e5f6a7b8c9d0e',
@@ -46,12 +46,12 @@ export class SecurityLoginDto {
 export class MaintenanceLoginDto {
   @ApiProperty({ example: 'maintenance@ams.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Maint@1234', minLength: 6 })
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 }
 
 // ─── Panel 4: Account login ──────────────────────────────────────────────────
@@ -59,12 +59,12 @@ export class MaintenanceLoginDto {
 export class AccountLoginDto {
   @ApiProperty({ example: 'accounts@ams.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Account@1234', minLength: 6 })
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 }
 
 // ─── Panel 5: Resident login ─────────────────────────────────────────────────
@@ -73,7 +73,7 @@ export class AccountLoginDto {
 export class ResidentLoginDto {
   @ApiProperty({ example: 'resident@gmail.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiPropertyOptional({
     example: 'MyPass@123',
@@ -89,9 +89,9 @@ export class ResidentLoginDto {
 export class VerifyResidentOtpDto {
   @ApiProperty({ example: '665f1b2c3d4e5f6a7b8c9d0e' })
   @IsString()
-  user_id: string;
+  user_id!: string;
 
   @ApiProperty({ example: '482910' })
   @IsString()
-  otp: string;
+  otp!: string;
 }

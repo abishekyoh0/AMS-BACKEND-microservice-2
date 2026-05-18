@@ -14,11 +14,11 @@ import { ResidentType } from '../../common/enums/status.enum';
 export class FamilyMemberDto {
   @ApiProperty({ example: 'Anjali Sharma' })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'Spouse' })
   @IsString()
-  relation: string;
+  relation!: string;
 
   @ApiPropertyOptional({ example: '9876500010' })
   @IsString()
@@ -38,11 +38,11 @@ export class CompleteResidentProfileDto {
 
   @ApiProperty({ example: 'Aadhar', enum: ['Aadhar', 'Passport', 'Driving License'] })
   @IsString()
-  id_proof_type: string;
+  id_proof_type!: string;
 
   @ApiProperty({ example: '1234-5678-9012' })
   @IsString()
-  id_proof_number: string;
+  id_proof_number!: string;
 
   @ApiPropertyOptional({ example: 'https://storage.ams.com/id/abc.jpg' })
   @IsString()
@@ -63,25 +63,25 @@ export class CompleteResidentProfileDto {
 
   @ApiProperty({ example: 'Ramesh Sharma' })
   @IsString()
-  emergency_contact_name: string;
+  emergency_contact_name!: string;
 
   @ApiProperty({ example: 'Father' })
   @IsString()
-  emergency_contact_relation: string;
+  emergency_contact_relation!: string;
 
   @ApiProperty({ example: '9876500099' })
   @IsString()
-  emergency_contact_mobile: string;
+  emergency_contact_mobile!: string;
 
   // ── Move-in ──────────────────────────────────────────────────────────────
 
   @ApiProperty({ example: '2025-01-15' })
   @IsDateString()
-  move_in_date: string;
+  move_in_date!: string;
 
   @ApiProperty({ enum: ResidentType, example: ResidentType.OWNER })
   @IsEnum(ResidentType)
-  resident_type: ResidentType;
+  resident_type!: ResidentType;
 
   // ── Vehicle (optional) ───────────────────────────────────────────────────
 
@@ -119,5 +119,5 @@ export class CompleteResidentProfileDto {
   @ApiProperty({ example: 'MySecure@123', minLength: 8, description: 'Resident sets their password here on first login.' })
   @IsString()
   @MinLength(8)
-  password: string;
+  password!: string;
 }

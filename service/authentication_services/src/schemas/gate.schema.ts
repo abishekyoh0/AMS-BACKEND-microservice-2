@@ -9,19 +9,19 @@ export type GateDocument = Gate & Document;
 @Schema({ timestamps: true, collection: 'gates' })
 export class Gate {
   @Prop({ required: true, unique: true, trim: true })
-  gate_name: string; // "Gate A", "Main Gate", "Back Gate"
+  gate_name!: string; // "Gate A", "Main Gate", "Back Gate"
 
   @Prop()
-  location: string;
+  location!: string;
 
   @Prop()
-  description: string;
+  description!: string;
 
   @Prop({ type: String, enum: GateStatus, default: GateStatus.ACTIVE })
-  status: GateStatus;
+  status!: GateStatus;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  created_by: Types.ObjectId;
+  created_by!: Types.ObjectId;
 }
 
 export const GateSchema = SchemaFactory.createForClass(Gate);
@@ -37,36 +37,36 @@ export type GateScheduleDocument = GateSchedule & Document;
 @Schema({ timestamps: true, collection: 'gate_schedules' })
 export class GateSchedule {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  gatekeeper: Types.ObjectId;
+  gatekeeper!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Gate', required: true })
-  gate: Types.ObjectId;
+  gate!: Types.ObjectId;
 
   @Prop({ required: true }) // "06:00"
-  shift_start: string;
+  shift_start!: string;
 
   @Prop({ required: true }) // "14:00"
-  shift_end: string;
+  shift_end!: string;
 
   @Prop() // Morning / Evening / Night
-  shift_name: string;
+  shift_name!: string;
 
   // For recurring weekly schedule
   @Prop({ type: String, enum: ShiftDay })
-  day_of_week: ShiftDay;
+  day_of_week!: ShiftDay;
 
   // For one-time schedule (takes priority over day_of_week)
   @Prop()
-  specific_date: string; // "YYYY-MM-DD"
+  specific_date!: string; // "YYYY-MM-DD"
 
   @Prop({ default: true })
-  is_active: boolean;
+  is_active!: boolean;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  created_by: Types.ObjectId;
+  created_by!: Types.ObjectId;
 
   @Prop()
-  notes: string;
+  notes!: string;
 }
 
 export const GateScheduleSchema = SchemaFactory.createForClass(GateSchedule);
@@ -82,28 +82,28 @@ export type GatekeeperSessionDocument = GatekeeperSession & Document;
 @Schema({ timestamps: true, collection: 'gatekeeper_sessions' })
 export class GatekeeperSession {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  gatekeeper: Types.ObjectId;
+  gatekeeper!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Gate', required: true })
-  gate: Types.ObjectId;
+  gate!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'GateSchedule', default: null })
-  schedule: Types.ObjectId;
+  schedule!: Types.ObjectId;
 
   @Prop({ required: true }) // "YYYY-MM-DD"
-  session_date: string;
+  session_date!: string;
 
   @Prop({ required: true })
-  login_time: Date;
+  login_time!: Date;
 
   @Prop({ default: null })
-  logout_time: Date;
+  logout_time!: Date;
 
   @Prop({ type: String, enum: SessionStatus, default: SessionStatus.ACTIVE })
-  status: SessionStatus;
+  status!: SessionStatus;
 
   @Prop()
-  notes: string;
+  notes!: string;
 }
 
 export const GatekeeperSessionSchema = SchemaFactory.createForClass(GatekeeperSession);
