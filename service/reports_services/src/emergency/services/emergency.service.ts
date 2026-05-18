@@ -52,7 +52,7 @@ export class EmergencyService {
       type: emergency.type,
       priority: emergency.priority,
       location: emergency.location,
-      raisedBy: emergency.raisedBy,
+      raisedBy: emergency.raisedById,
       message: emergency.message,
       sendTo: emergency.sendTo,
       time,
