@@ -14,8 +14,8 @@ import { VisitorsGatewayController } from './visitors/visitors.gateway.controlle
 
 @Module({
   imports: [
+    
     ConfigModule.forRoot({ isGlobal: true }),
-
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
