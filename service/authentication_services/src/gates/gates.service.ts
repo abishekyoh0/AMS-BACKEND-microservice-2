@@ -30,7 +30,7 @@ export class GatesService {
     if (exists) throw new BadRequestException('Gate name already exists');
     return this.gateModel.create({ ...dto, created_by: new Types.ObjectId(creatorId) });
   }
-
+7
   async getAllGates() {
     return this.gateModel.find().sort({ gate_name: 1 }).lean();
   }

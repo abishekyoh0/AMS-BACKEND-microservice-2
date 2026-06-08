@@ -9,7 +9,7 @@ export class VisitorService {
 
   constructor(
     @InjectModel(Visitor.name) private visitorModel: Model<VisitorDocument>,
-  ) {}
+  ) { }
 
   async create(createVisitorDto: CreateVisitorDto) {
     const visitor = new this.visitorModel(createVisitorDto);

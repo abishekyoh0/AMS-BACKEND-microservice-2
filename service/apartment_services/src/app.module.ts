@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from './config/config.module';
 import { FloorsModule } from './blocks/module/floor-module';
 import { FlatsModule } from './blocks/module/flat-module';
-import { UnitsModule } from './blocks/module/unit-module';  // FIX 7: UnitsModule was never imported here — unit routes were completely dead
+import { UnitsModule } from './blocks/module/unit-module'; 
 import { VisitorModule } from './visitors/module/visitor-module';
 
 @Module({

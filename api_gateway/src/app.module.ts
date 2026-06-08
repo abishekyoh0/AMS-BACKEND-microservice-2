@@ -10,6 +10,7 @@ import { ComplaintsGatewayController } from './complaints/complaints.gateway.con
 import { PaymentsGatewayController } from './payments/payments.gateway.controller';
 import { NotificationsGatewayController } from './notifications/notifications.gateway.controller';
 import { EmergencyGatewayController } from './emergency/emergency.gateway.controller';
+import { VisitorsGatewayController } from './visitors/visitors.gateway.controller';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { EmergencyGatewayController } from './emergency/emergency.gateway.contro
     PaymentsGatewayController,
     NotificationsGatewayController,
     EmergencyGatewayController,
+    VisitorsGatewayController,
   ],
 
   providers: [
@@ -74,4 +76,4 @@ import { EmergencyGatewayController } from './emergency/emergency.gateway.contro
   ],
 
 })
-export class AppModule {}
+export class AppModule { }
